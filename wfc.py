@@ -6,7 +6,6 @@ import os
 
 import sys
 
-
 # Base config options
 base_config_file_name = "config.cfg"
 cfg_keys = [
@@ -132,7 +131,7 @@ def create_config(file_name: str) -> None:
     base_argument = [
         "test.png",
         "3",
-        *["True" for index in range(10)],
+        *["True" for _ in range(10)],
         "new.png",
         "1",
         "40",
@@ -152,21 +151,30 @@ def crop_image(file_name: str,
                lr_connection: bool,
                tb_connection: bool,
                *accepted_rotate: bool) -> tuple:
+    """
+
+    :param file_name:
+    :param size_grid:
+    :param lr_connection:
+    :param tb_connection:
+    :param accepted_rotate:
+    :return:
+    """
     numpy_image = image_to_numpy_array(file_name)
     image_clip = numpy.array([numpy_image[0:size_grid, 0:size_grid]], dtype=int)
     image_clip_chance = numpy.array([1], dtype=int)
-    part = numpy.zeros((size_grid, size_grid, 3), dtype=int)
     for iter1 in range(numpy_image.shape[0] - (size_grid - 1) * (not tb_connection)):
         for iter2 in range(numpy_image.shape[1] - (size_grid - 1) * (not lr_connection)):
             # all
             if iter1 + size_grid > numpy_image.shape[0] and iter2 + size_grid > numpy_image.shape[1]:
                 part = numpy.append(numpy.append(numpy_image[iter1:iter1 + size_grid, iter2:iter2 + size_grid],
-                                                 numpy_image[0:iter1 + size_grid - numpy_image.shape[0], iter2:iter2 + size_grid], 0),
-                                    numpy.append(numpy_image[iter1:iter1 + size_grid, 0:iter2 + size_grid - numpy_image.shape[1]],
-                                                 numpy_image[0:iter1 + size_grid - numpy_image.shape[0], 0:iter2 + size_grid - numpy_image.shape[1]], 0),
+                                                 numpy_image[0:iter1 + size_grid - numpy_image.shape[0],
+                                                 iter2:iter2 + size_grid], 0),
+                                    numpy.append(numpy_image[iter1:iter1 + size_grid,
+                                                 0:iter2 + size_grid - numpy_image.shape[1]],
+                                                 numpy_image[0:iter1 + size_grid - numpy_image.shape[0],
+                                                 0:iter2 + size_grid - numpy_image.shape[1]], 0),
                                     1)
-                plt.imshow(part)
-                plt.show()
             # lr
             elif iter2 + size_grid > numpy_image.shape[1]:
                 part = numpy.append(numpy_image[iter1:iter1 + size_grid, iter2:iter2 + size_grid],
@@ -180,41 +188,87 @@ def crop_image(file_name: str,
 
             # 0
             if accepted_rotate[0]:
-                image_clip = add_part_to_array(part, image_clip)
+                array_in = array_in_array(part, image_clip)
+                if not any(array_in):
+                    image_clip = numpy.append(image_clip, [part], 0)
+                    image_clip_chance = numpy.append(image_clip_chance, [1])
+                else:
+                    image_clip_chance[array_in.index(True)] += 1
             if accepted_rotate[1]:
-                image_clip = add_part_to_array(numpy.flip(part, 0), image_clip)
+                part_flip = numpy.flip(part, 0)
+                array_in = array_in_array(part_flip, image_clip)
+                if not any(array_in):
+                    image_clip = numpy.append(image_clip, [part_flip], 0)
+                    image_clip_chance = numpy.append(image_clip_chance, [1])
+                else:
+                    image_clip_chance[array_in.index(True)] += 1
             # 90
             part = numpy.rot90(part)
             if accepted_rotate[2]:
-                image_clip = add_part_to_array(part, image_clip)
+                array_in = array_in_array(part, image_clip)
+                if not any(array_in):
+                    image_clip = numpy.append(image_clip, [part], 0)
+                    image_clip_chance = numpy.append(image_clip_chance, [1])
+                else:
+                    image_clip_chance[array_in.index(True)] += 1
             if accepted_rotate[3]:
-                image_clip = add_part_to_array(numpy.flip(part, 0), image_clip)
+                part_flip = numpy.flip(part, 0)
+                array_in = array_in_array(part_flip, image_clip)
+                if not any(array_in):
+                    image_clip = numpy.append(image_clip, [part_flip], 0)
+                    image_clip_chance = numpy.append(image_clip_chance, [1])
+                else:
+                    image_clip_chance[array_in.index(True)] += 1
             # 180
             part = numpy.rot90(part)
             if accepted_rotate[4]:
-                image_clip = add_part_to_array(part, image_clip)
+                array_in = array_in_array(part, image_clip)
+                if not any(array_in):
+                    image_clip = numpy.append(image_clip, [part], 0)
+                    image_clip_chance = numpy.append(image_clip_chance, [1])
+                else:
+                    image_clip_chance[array_in.index(True)] += 1
             if accepted_rotate[5]:
-                image_clip = add_part_to_array(numpy.flip(part, 0), image_clip)
+                part_flip = numpy.flip(part, 0)
+                array_in = array_in_array(part_flip, image_clip)
+                if not any(array_in):
+                    image_clip = numpy.append(image_clip, [part_flip], 0)
+                    image_clip_chance = numpy.append(image_clip_chance, [1])
+                else:
+                    image_clip_chance[array_in.index(True)] += 1
             # 270
             part = numpy.rot90(part)
             if accepted_rotate[6]:
-                image_clip = add_part_to_array(part, image_clip)
+                array_in = array_in_array(part, image_clip)
+                if not any(array_in):
+                    image_clip = numpy.append(image_clip, [part], 0)
+                    image_clip_chance = numpy.append(image_clip_chance, [1])
+                else:
+                    image_clip_chance[array_in.index(True)] += 1
             if accepted_rotate[7]:
-                image_clip = add_part_to_array(numpy.flip(part, 0), image_clip)
+                part_flip = numpy.flip(part, 0)
+                array_in = array_in_array(part_flip, image_clip)
+                if not any(array_in):
+                    image_clip = numpy.append(image_clip, [part_flip], 0)
+                    image_clip_chance = numpy.append(image_clip_chance, [1])
+                else:
+                    image_clip_chance[array_in.index(True)] += 1
 
     print(image_clip.shape)
     return image_clip, image_clip_chance
 
 
-def add_part_to_array(part: numpy.ndarray,
-                      array_part: numpy.ndarray) -> numpy.ndarray:
-    if not (part == array_part).all(-1).all(-1).all(-1).any():
-        return numpy.append(array_part, [part], 0)
-    else:
-        return array_part
+def array_in_array(array1: numpy.ndarray,
+                   array2: numpy.ndarray) -> tuple:
+    return tuple((array1 == array2).all(-1).all(-1).all(-1))
 
 
-def image_to_numpy_array(file_name: str):
+def image_to_numpy_array(file_name: str) -> numpy.ndarray:
+    """
+
+    :param file_name:
+    :return:
+    """
     with Image.open(file_name) as image:
         numpy_image = numpy.array(image)
     if numpy_image.shape[-1] == 4:
@@ -238,4 +292,3 @@ if __name__ == "__main__":
         exit()
 
     crop_image(*config[:12])
-
