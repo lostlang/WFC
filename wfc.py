@@ -11,23 +11,10 @@ base_config_file_name = "config.cfg"
 cfg_keys = [
     "file_name",
     "grid_size",
-    "lr_connection",
-    "tb_connection",
-    "normal",
-    "normal_flip",
-    "rotate_90",
-    "rotate_90_flip",
-    "rotate_180",
-    "rotate_180_flip",
-    "rotate_270",
-    "rotate_270_flip",
-    "new_image_name",
-    "new_image_count",
-    "new_image_weight",
-    "new_image_height",
-
+    *["{}_connection".format(_) for _ in ("lr", "tb")],
+    *["rotate_{}{}".format(iter1 * 90, _) for iter1 in range(4) for _ in ("", "_flip")],
+    *["new_image_{}".format(_) for _ in ("name", "count", "weight", "height")]
 ]
-
 cfg_types = [
     str,
     int,
@@ -54,6 +41,33 @@ class LoadingConfigError(Exception):
         elif error_code == 2:
             message = self.__wrong_type.format(line_in_config)
         super(LoadingConfigError, self).__init__(message)
+
+
+class ImageParts:
+    def __init__(self, parts: numpy.ndarray,
+                 chances: numpy.ndarray):
+        self.parts = parts
+        self.chances = chances
+
+    def __len__(self):
+        return self.chances.size
+
+
+class PartConnection:
+    def __init__(self, parts: numpy.ndarray):
+        self.parts = parts
+        self.size = parts.shape[1]
+        self.tile_couple = {}
+
+    def __len__(self):
+        return self.parts.shape[0]
+
+    def search(self,
+               top_parts: tuple,
+               right_parts: tuple,
+               bottom_parts: tuple,
+               left_parts: tuple):
+        pass
 
 
 # function
@@ -146,11 +160,11 @@ def create_config(file_name: str) -> None:
                                         base_argument[index]))
 
 
-def crop_image(file_name: str,
-               size_grid: int,
-               lr_connection: bool,
-               tb_connection: bool,
-               *accepted_rotate: bool) -> tuple:
+def cropping_image(file_name: str,
+                   size_grid: int,
+                   lr_connection: bool,
+                   tb_connection: bool,
+                   *accepted_rotate: bool) -> ImageParts:
     """
 
     :param file_name:
@@ -254,8 +268,7 @@ def crop_image(file_name: str,
                 else:
                     image_clip_chance[array_in.index(True)] += 1
 
-    print(image_clip.shape)
-    return image_clip, image_clip_chance
+    return ImageParts(image_clip, image_clip_chance)
 
 
 def array_in_array(array1: numpy.ndarray,
@@ -276,6 +289,13 @@ def image_to_numpy_array(file_name: str) -> numpy.ndarray:
     return numpy_image
 
 
+def get_adjacent_cell(central_cell: tuple,
+                      size_map: tuple,
+                      adjacent=0) -> tuple:
+
+    return ()
+
+
 if __name__ == "__main__":
     if not os.path.exists(base_config_file_name):
         create_config(base_config_file_name)
@@ -291,4 +311,6 @@ if __name__ == "__main__":
         print("Image not found")
         exit()
 
-    crop_image(*config[:12])
+    image_part = cropping_image(*config[:12])
+    connection = PartConnection(image_part.parts)
+
